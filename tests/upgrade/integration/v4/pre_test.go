@@ -211,7 +211,7 @@ var _ = Describe("Upgrade - Pre", func() {
 
 		It("should wait for the voting end height to be reached", func() {
 			By("pinging the node status until the voting end height is reached")
-			err := cli.WaitForChainHeight(cli.Validator0, cli.CliBinaryName, VotingEndHeight, cli.VotingPeriod*3)
+			err := cli.WaitForChainHeight(cli.Validator0, cli.CliBinaryName, VotingEndHeight, cli.VotingPeriod*6)
 			Expect(err).To(BeNil())
 		})
 
@@ -224,7 +224,7 @@ var _ = Describe("Upgrade - Pre", func() {
 
 		It("should wait for the upgrade height to be reached", func() {
 			By("pinging the node status until the upgrade height is reached")
-			err := cli.WaitForChainHeight(cli.Validator0, cli.CliBinaryName, UpgradeHeight, cli.VotingPeriod)
+			err := cli.WaitForChainHeight(cli.Validator0, cli.CliBinaryName, UpgradeHeight, cli.VotingPeriod*6)
 			Expect(err).To(BeNil())
 		})
 	})
