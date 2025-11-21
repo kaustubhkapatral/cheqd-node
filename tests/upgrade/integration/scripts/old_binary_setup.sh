@@ -16,9 +16,6 @@ bash import-keys.sh
 # Start network
 docker compose --env-file mainnet-latest.env up --detach --no-build
 
-# TODO: Get rid of this sleep.
-sleep 5
-
 docker ps -a
 # Copy keys
 sudo docker compose --env-file mainnet-latest.env cp network-config/validator-0/keyring-test validator-0:/home/cheqd/.cheqdnode
