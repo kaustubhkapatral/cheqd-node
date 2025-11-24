@@ -80,6 +80,10 @@ docker compose exec osmosis apk add bash jq
 docker compose exec osmosis bash /osmosis/osmosis-init.sh
 docker compose exec -d osmosis osmosisd start
 
+info "Waiting for chains"
+# TODO: Get rid of this
+sleep 10
+
 info "Checking statuses"
 CHEQD_STATUS=$(docker compose exec cheqd cheqd-noded status 2>&1)
 assert_network_running_comet_v38_or_above "${CHEQD_STATUS}"
