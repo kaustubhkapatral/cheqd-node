@@ -48,6 +48,8 @@ jobs:
     outputs:
       RELEASE_VERSION: ${{ steps.set-version.outputs.RELEASE_VERSION }}
       EXECUTE_RELEASE: ${{ steps.execute-release.outputs.EXECUTE_RELEASE }}
+      RELEASE_TYPE: ${{ steps.release-type.outputs.RELEASE_TYPE }}
+      LATEST_TAG: ${{ steps.release-type.outputs.LATEST_TAG }}
 
     steps:
       - uses: actions/checkout@v5
@@ -96,6 +98,29 @@ jobs:
         run: |
           RELEASE_VERSION=$( git describe --tags "${{ github.sha }}")
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+
+      # Determine release type (production vs staging) based on branch
+      - name: Determine release type
+        id: release-type
+        if: steps.execute-release.outputs.EXECUTE_RELEASE == 'true'
+        run: |
+          # Get the current tag
+          TAG=$(git describe --tags --exact-match 2>/dev/null || echo "")
+          git fetch --all --tags --quiet || true
+          
+          # Check if the tag/commit is reachable from origin/main
+          if git branch -r --contains "$TAG" 2>/dev/null | grep -qE "(origin/main$|origin/HEAD.*main)" || \
+             git merge-base --is-ancestor "$TAG" origin/main 2>/dev/null; then
+            # Tag is on main branch - production release
+            echo "RELEASE_TYPE=production" >> "$GITHUB_OUTPUT"
+            echo "LATEST_TAG=production-latest" >> "$GITHUB_OUTPUT"
+            echo "Detected production release from main branch (tag: $TAG)"
+          else
+            # Tag is not on main branch - staging release (develop)
+            echo "RELEASE_TYPE=staging" >> "$GITHUB_OUTPUT"
+            echo "LATEST_TAG=staging-latest" >> "$GITHUB_OUTPUT"
+            echo "Detected staging release from non-main branch (tag: $TAG)"
+          fi
 
   release-binary:
     name: "Node binary"
@@ -212,7 +237,7 @@ jobs:
             latest=auto
           tags: |
             type=semver,pattern={{version}},value=${{ needs.release-guard.outputs.RELEASE_VERSION }}
-            type=raw,value=production-latest
+            type=raw,value=${{ needs.release-guard.outputs.LATEST_TAG }}
             type=sha,format=long
           labels: |
             org.opencontainers.image.vendor="Cheqd Foundation Limited"
